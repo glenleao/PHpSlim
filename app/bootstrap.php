@@ -33,6 +33,16 @@ $container['validator'] = function($container) {
     return new App\Validation\Validator;
 };
 
+$container['flash'] = function($container) {
+    return new Slim\Flash\Messages;
+};
+
+$container['auth'] = function($container) {
+    return new App\Auth\Auth($container);
+};
+
+
+
 $container['view'] =  function($container) {
     $view = new Slim\Views\Twig(__DIR__ . '/../resources/views', [
         'cache' => false,
@@ -43,17 +53,27 @@ $container['view'] =  function($container) {
         $container->request->getUri()
     ));
 
+    $view->getEnvironment()->addGlobal('flash', $container->flash);
+
+    $view->getEnvironment()->addGlobal('auth',[
+        'check' =>$container->auth->check(),
+        'user' => $container->auth->user(),
+        ]);
+
     return $view;
 };
 
+// require __DIR__ . '/commons.php';
 
-$container['HomeController'] = function($container) {
-    return new App\Controllers\HomeController($container);
-};
+ $container['HomeController'] = function($container) {
+     return new App\Controllers\HomeController($container);
+ };
 
-$container['AuthController'] = function($container) {
-    return new App\Controllers\AuthController($container);
-};
+ $container['AuthController'] = function($container) {
+     return new App\Controllers\AuthController($container);
+ };
+
+ getControllers($container, ['HomeController', 'AuthController', 'UserController']);
 
 $app->add(new App\Middleware\DisplayInputErrorsMiddleware($container));
 

@@ -12,6 +12,14 @@ class AuthController extends Controller
     {
         if($request->isGet())
             return $this->container->view->render($response, 'login.twig');
+
+            if(!$this->container->auth->attempt(
+                $request->getParam('email'),
+                $request->getParam('password'))){
+                    return $response->withRedirect($this->container->router->pathFor('auth.login'));
+                }
+
+                return $response->withRedirect($this->container->router->pathFor('home'));
     }
 
     public function register($request,$response)
@@ -45,5 +53,13 @@ class AuthController extends Controller
         $user->permissions()->create(UserPermission::$defaults);
 
         return $response->withRedirect($this->container->router->pathFor('auth.login'));
+    }
+
+    public function logout($request, $response)
+    {
+        if(isset($_SESSION['user'])) {
+            unset($_SESSION['user']);
+            return $response->withRedirect($this->container->router->pathFor('home'));
+        }
     }
 }
